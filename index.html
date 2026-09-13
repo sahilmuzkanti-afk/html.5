@@ -13,15 +13,22 @@
         <p class="eyebrow">TABBED MODE</p>
         <h1>Keyboard Pac-Man</h1>
       </div>
-      <p class="keyboard-badge">KEYBOARD ONLY</p>
+      <div class="header-meta">
+        <p class="keyboard-badge">KEYBOARD ONLY</p>
+        <p class="life-counter">LIVES <strong id="lives">3</strong></p>
+      </div>
     </header>
     <section class="game-frame" aria-label="Game area">
       <canvas id="game" width="600" height="400" aria-label="Keyboard-only Pac-Man game"></canvas>
-      <div id="overlay" class="pause-overlay" hidden>PAUSED</div>
+      <div id="overlay" class="pause-overlay" hidden>
+        <strong id="overlayTitle">PAUSED</strong>
+        <span id="overlayHint">Press P to resume</span>
+      </div>
     </section>
     <footer class="controls">
       <div class="control-row"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd><span>Move</span></div>
       <div class="control-row"><kbd>P</kbd><span>Pause / Resume</span></div>
+      <div class="control-row"><kbd>Enter</kbd><span>Restart after game over</span></div>
       <div class="blocked-row"><span>Mouse disabled</span><span>Tab disabled</span></div>
       <p id="status" class="status">RUNNING</p>
     </footer>

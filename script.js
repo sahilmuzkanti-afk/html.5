@@ -2,6 +2,9 @@ const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
 const statusText = document.getElementById("status");
 const overlay = document.getElementById("overlay");
+const livesText = document.getElementById("lives");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayHint = document.getElementById("overlayHint");
 const mainImage = new Image();
 const keyclick = {};
 let score = 0;
@@ -10,6 +13,8 @@ let countblink = 10;
 let ghost = false;
 let ghost2 = false;
 let paused = false;
+let lives = 3;
+let gameOver = false;
 const player = { x: 50, y: 100, pacmouth: 320, pacdir: 0, psize: 32, speed: 5 };
 const enemy = { x: 150, y: 200, speed: 5, moving: 0, dirx: 0, diry: 0, flash: 0, ghosteat: false };
 const enemy2 = { x: 150, y: 200, speed: 5, moving: 0, dirx: 0, diry: 0, flash: 0, ghosteat: false };
@@ -18,13 +23,18 @@ const mouseEvents = ["click", "dblclick", "mousedown", "mouseup", "contextmenu",
 mouseEvents.forEach(type => document.addEventListener(type, event => event.preventDefault(), { capture: true, passive: false }));
 document.addEventListener("keydown", event => {
   if (event.key === "Tab") { event.preventDefault(); return; }
-  if (event.key.toLowerCase() === "p" && !event.repeat) {
+  if (gameOver && event.key === "Enter" && !event.repeat) {
+    event.preventDefault();
+    restartGame();
+    return;
+  }
+  if (!gameOver && event.key.toLowerCase() === "p" && !event.repeat) {
     event.preventDefault();
     paused = !paused;
     updatePauseUI();
     return;
   }
-  if (!paused && [37, 38, 39, 40].includes(event.keyCode)) {
+  if (!paused && !gameOver && [37, 38, 39, 40].includes(event.keyCode)) {
     event.preventDefault();
     keyclick[event.keyCode] = true;
     move();
@@ -32,8 +42,25 @@ document.addEventListener("keydown", event => {
 }, false);
 document.addEventListener("keyup", event => delete keyclick[event.keyCode], false);
 function updatePauseUI() {
-  if (statusText) statusText.textContent = paused ? "PAUSED" : "RUNNING";
-  if (overlay) overlay.hidden = !paused;
+  if (livesText) livesText.textContent = lives;
+  if (statusText) statusText.textContent = gameOver ? "GAME OVER" : paused ? "PAUSED" : "RUNNING";
+  if (!overlay) return;
+  overlay.hidden = !paused && !gameOver;
+  overlay.className = gameOver ? "pause-overlay game-over" : "pause-overlay";
+  if (overlayTitle) overlayTitle.textContent = gameOver ? "GAME OVER" : "PAUSED";
+  if (overlayHint) overlayHint.textContent = gameOver ? "Press Enter to restart" : "Press P to resume";
+}
+function resetPositions() {
+  player.x = 50; player.y = 100; player.pacdir = 0; player.pacmouth = 320; player.speed = 5;
+  enemy.x = 150; enemy.y = 200; enemy.moving = 0; enemy.dirx = 0; enemy.diry = 0;
+  enemy2.x = 150; enemy2.y = 200; enemy2.moving = 0; enemy2.dirx = 0; enemy2.diry = 0;
+}
+function restartGame() {
+  score = 0; gscore = 0; lives = 3; gameOver = false; paused = false;
+  ghost = false; ghost2 = false; countblink = 10;
+  powerdot.x = 10; powerdot.y = 10; powerdot.powerup = false; powerdot.pcountdown = 0; powerdot.ghosteat = false;
+  resetPositions();
+  updatePauseUI();
 }
 function move() {
   if (37 in keyclick) { player.x -= player.speed; player.pacdir = 64; }
@@ -71,9 +98,16 @@ function chase(unit) {
 }
 function touching(a, b) { return a.x <= b.x + 26 && b.x <= a.x + 26 && a.y <= b.y + 26 && b.y <= a.y + 32; }
 function hitGhost(unit) {
-  if (!touching(player, unit)) return;
-  if (powerdot.ghosteat) score++; else gscore++;
+  if (!touching(player, unit) || gameOver) return;
+  if (powerdot.ghosteat) {
+    score++;
+  } else {
+    gscore++;
+    lives--;
+    if (lives <= 0) { gameOver = true; paused = false; }
+  }
   player.x = 10; player.y = 100; unit.x = 300; unit.y = 200; powerdot.pcountdown = 0;
+  updatePauseUI();
 }
 function render() {
   context.fillStyle = "black"; context.fillRect(0, 0, canvas.width, canvas.height);
@@ -94,10 +128,13 @@ function render() {
   context.drawImage(mainImage, player.pacmouth, player.pacdir, 32, 32, player.x, player.y, 32, 32);
 }
 function playgame() {
-  if (!paused) render();
+  if (!paused && !gameOver) render();
   requestAnimationFrame(playgame);
 }
 mainImage.onload = playgame;
 mainImage.src = "pac.png";
 updatePauseUI();
-globalThis.__pacman = { player, enemy, enemy2, powerdot, render, isPaused: () => paused };
+globalThis.__pacman = {
+  player, enemy, enemy2, powerdot, render, restartGame,
+  isPaused: () => paused, getLives: () => lives, isGameOver: () => gameOver
+};
