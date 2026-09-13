@@ -1,5 +1,7 @@
 const canvas = document.getElementById("game");
 const context = canvas.getContext("2d");
+const statusText = document.getElementById("status");
+const overlay = document.getElementById("overlay");
 const mainImage = new Image();
 const keyclick = {};
 let score = 0;
@@ -7,6 +9,7 @@ let gscore = 0;
 let countblink = 10;
 let ghost = false;
 let ghost2 = false;
+let paused = false;
 const player = { x: 50, y: 100, pacmouth: 320, pacdir: 0, psize: 32, speed: 5 };
 const enemy = { x: 150, y: 200, speed: 5, moving: 0, dirx: 0, diry: 0, flash: 0, ghosteat: false };
 const enemy2 = { x: 150, y: 200, speed: 5, moving: 0, dirx: 0, diry: 0, flash: 0, ghosteat: false };
@@ -15,13 +18,23 @@ const mouseEvents = ["click", "dblclick", "mousedown", "mouseup", "contextmenu",
 mouseEvents.forEach(type => document.addEventListener(type, event => event.preventDefault(), { capture: true, passive: false }));
 document.addEventListener("keydown", event => {
   if (event.key === "Tab") { event.preventDefault(); return; }
-  if ([37, 38, 39, 40].includes(event.keyCode)) {
+  if (event.key.toLowerCase() === "p" && !event.repeat) {
+    event.preventDefault();
+    paused = !paused;
+    updatePauseUI();
+    return;
+  }
+  if (!paused && [37, 38, 39, 40].includes(event.keyCode)) {
     event.preventDefault();
     keyclick[event.keyCode] = true;
     move();
   }
 }, false);
 document.addEventListener("keyup", event => delete keyclick[event.keyCode], false);
+function updatePauseUI() {
+  if (statusText) statusText.textContent = paused ? "PAUSED" : "RUNNING";
+  if (overlay) overlay.hidden = !paused;
+}
 function move() {
   if (37 in keyclick) { player.x -= player.speed; player.pacdir = 64; }
   if (38 in keyclick) { player.y -= player.speed; player.pacdir = 96; }
@@ -80,7 +93,11 @@ function render() {
   context.drawImage(mainImage, enemy.ghostNum, enemy.flash, 32, 32, enemy.x, enemy.y, 32, 32);
   context.drawImage(mainImage, player.pacmouth, player.pacdir, 32, 32, player.x, player.y, 32, 32);
 }
-function playgame() { render(); requestAnimationFrame(playgame); }
+function playgame() {
+  if (!paused) render();
+  requestAnimationFrame(playgame);
+}
 mainImage.onload = playgame;
 mainImage.src = "pac.png";
-globalThis.__pacman = { player, enemy, enemy2, powerdot, render };
+updatePauseUI();
+globalThis.__pacman = { player, enemy, enemy2, powerdot, render, isPaused: () => paused };

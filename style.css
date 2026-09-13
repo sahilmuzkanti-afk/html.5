@@ -6,7 +6,9 @@
 html, body {
   margin: 0;
   min-height: 100%;
-  background: #222;
+  background: #151515;
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
 }
 body {
   min-height: 100vh;
@@ -14,5 +16,56 @@ body {
   place-items: center;
   overflow: hidden;
 }
-.game-shell { border: 2px solid #444; background: #000; }
-canvas { display: block; pointer-events: none; }
+.game-shell {
+  width: min(660px, 94vw);
+  padding: 20px;
+  border: 2px solid #444;
+  background: #222;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, .35);
+}
+.game-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: .18em;
+  color: #bcbcbc;
+}
+h1 { margin: 0; font-size: 24px; }
+.keyboard-badge {
+  margin: 0;
+  padding: 7px 9px;
+  border: 1px solid #777;
+  font-size: 11px;
+  letter-spacing: .08em;
+}
+.game-frame { position: relative; background: #000; }
+canvas { width: 100%; height: auto; display: block; pointer-events: none; }
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .58);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.pause-overlay[hidden] { display: none; }
+.controls { padding-top: 13px; display: grid; gap: 8px; }
+.control-row, .blocked-row { display: flex; align-items: center; gap: 7px; }
+kbd {
+  min-width: 26px;
+  padding: 4px 6px;
+  border: 1px solid #777;
+  border-bottom-width: 3px;
+  text-align: center;
+  font: inherit;
+}
+.control-row span { color: #d5d5d5; font-size: 13px; }
+.blocked-row { justify-content: space-between; color: #aaa; font-size: 12px; }
+.status { margin: 0; font-size: 11px; letter-spacing: .16em; color: #eee; }
